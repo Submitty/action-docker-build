@@ -1,0 +1,70 @@
+name: Docker Build and Push
+
+on:
+  workflow_call:
+    inputs:
+      push:
+        required: true
+        type: boolean
+        description: Whether to push the built images to Docker Hub
+      docker_username:
+        required: true
+        type: string
+      docker_password:
+        required: false
+        type: string
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      run_docker_jobs: ${{ steps.set-run-docker-jobs.outputs.run_docker_jobs }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }}
+      - name: Set Matrix
+        id: set-matrix
+        run: |
+          echo "matrix=$(python3 bin/generate_matrix.py ${{ inputs.docker_username }} ${{ github.event.before }} ${{ github.event.after }})" >> $GITHUB_OUTPUT
+      - name: List Matrix
+        run: |
+          echo ${{ steps.set-matrix.outputs.matrix }}
+      - name: Set Run Condition
+        id: set-run-docker-jobs
+        run: |
+          num_to_build=$(echo '${{ steps.set-matrix.outputs.matrix }}' | jq '.include | length')
+          if [[ "$num_to_build" -eq 0 ]]; then
+            echo "run_docker_jobs=false" >> $GITHUB_OUTPUT
+          else
+            echo "run_docker_jobs=true" >> $GITHUB_OUTPUT
+          fi
+  docker:
+    needs:
+      - generate-matrix
+    if: needs.generate-matrix.outputs.run_docker_jobs == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Docker Hub login
+        uses: docker/login-action@releases/v1
+        with:
+          username: ${{ inputs.docker_username }}
+          password: ${{ inputs.docker_password }}
+      - name: Build and push docker
+        uses: docker/build-push-action@v4
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: ${{ matrix.tags }}
+          platforms: linux/amd64,linux/arm64
