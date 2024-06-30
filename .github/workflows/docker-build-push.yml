@@ -19,7 +19,6 @@ on:
     secrets:
       docker_password:
         required: false
-        type: string
 
 jobs:
   generate-matrix:
