@@ -16,7 +16,7 @@ on:
       base_commit:
         required: true
         type: string
-      head-commit:
+      head_commit:
         required: true
         type: string
 
