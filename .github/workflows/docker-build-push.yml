@@ -38,22 +38,6 @@ jobs:
           docker-username: ${{ inputs.docker_username }}
           base-commit: ${{ inputs.base_commit }}
           head-commit: ${{ inputs.head_commit }}
-      # - name: Set Matrix
-      #   id: set-matrix
-      #   run: |
-      #     echo "matrix=$(python3 bin/generate_matrix.py ${{ inputs.docker_username }} ${{ github.event.before }} ${{ github.event.after }})" >> $GITHUB_OUTPUT
-      # - name: List Matrix
-      #   run: |
-      #     echo ${{ steps.set-matrix.outputs.matrix }}
-      # - name: Set Run Condition
-      #   id: set-run-docker-jobs
-      #   run: |
-      #     num_to_build=$(echo '${{ steps.set-matrix.outputs.matrix }}' | jq '.include | length')
-      #     if [[ "$num_to_build" -eq 0 ]]; then
-      #       echo "run_docker_jobs=false" >> $GITHUB_OUTPUT
-      #     else
-      #       echo "run_docker_jobs=true" >> $GITHUB_OUTPUT
-      #     fi
   docker:
     needs:
       - generate-matrix
