@@ -33,7 +33,7 @@ jobs:
           fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }}
       - name: Generate Matrix Action
         id: set-matrix
-        uses: submitty/action-docker-matrix@main
+        uses: submitty/action-docker-matrix@v24.06.00
         with:
           docker-username: ${{ inputs.docker_username }}
           base-commit: ${{ inputs.base_commit }}
