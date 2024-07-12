@@ -7,7 +7,7 @@ on:
         required: true
         type: boolean
         description: Whether to push the built images to Docker Hub
-      docker_username:
+      docker_org_name:
         required: true
         type: string
       base_commit:
@@ -17,6 +17,8 @@ on:
         required: true
         type: string
     secrets:
+      docker_username:
+        required: false
       docker_password:
         required: false
 
@@ -35,7 +37,7 @@ jobs:
         id: set-matrix
         uses: submitty/action-docker-matrix@v24.06.00
         with:
-          docker-username: ${{ inputs.docker_username }}
+          docker-username: ${{ inputs.docker_org_name }}
           base-commit: ${{ inputs.base_commit }}
           head-commit: ${{ inputs.head_commit }}
   docker:
@@ -57,7 +59,7 @@ jobs:
         uses: docker/login-action@releases/v1
         if: ${{ inputs.push }}
         with:
-          username: ${{ inputs.docker_username }}
+          username: ${{ secrets.docker_username }}
           password: ${{ secrets.docker_password }}
       - name: Build and push docker
         uses: docker/build-push-action@v4
