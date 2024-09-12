@@ -32,7 +32,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }}
+          fetch-depth: 0
       - name: Generate Matrix Action
         id: set-matrix
         uses: submitty/action-docker-matrix@v24.06.00
